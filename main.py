@@ -31,6 +31,7 @@ def images_are_similar_mse(image1_path, image2_path, csv_file_path):
     image2 = Image.open(image2_path)
     mse = np.mean((np.asarray(image1.astype("float")) - np.asarray(image2.astype("float"))) ** 2)
     mse /= float(image1.shape[0] * image2.shape[1])
+    print(mse)
     if mse < 200:
         with open(csv_file_path, "a", newline="") as csv_file:
             writer = csv.writer(csv_file)
