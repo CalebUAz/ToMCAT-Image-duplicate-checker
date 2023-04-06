@@ -54,13 +54,29 @@ def delete_similar_images(directory, num_processes=None, batch_size=10):
 
     # Run the comparison functions on each list of images in parallel processes
     with multiprocessing.Pool(num_processes) as pool:
-        for chunk in image_path_chunks:
-            args_list = [(pair, csv_file_path) for pair in zip(chunk, chunk[1:])]
-            pool.starmap(process_pair, args_list)
+        for batch in image_path_batches:
+            for method in csv_files.keys():
+                csv_file_path = csv_files[method]
+                pool.apply_async(process_list, args=(batch, method, csv_file_path))
+        pool.close()
+        pool.join()
+
+# Define a function to run the comparison functions on a list of images
+def process_list(image_paths, method, csv_file_path):
+    for i in range(len(image_paths)):
+        for j in range(i+1, len(image_paths)):
+            if method == "images_are_similar_histogram":
+                images_are_similar_histogram(image_paths[i], image_paths[j], csv_file_path)
+            elif method == "images_are_similar_hash":
+                images_are_similar_hash(image_paths[i], image_paths[j], csv_file_path)
+            elif method == "images_are_similar_mse":
+                images_are_similar_mse(image_paths[i], image_paths[j], csv_file_path)
+
 
 # Example usage
 csv_file_path = "similar_images.csv"
 with open(csv_file_path, "w", newline="") as csv_file:
     writer = csv.writer(csv_file)
     writer.writerow(["method", "image1_path", "image2_path"])
-delete_similar_images("/space/tomcat/LangLab/experiments/study_3_pilot/group/exp_2023_02_21_14/lion/face_images", csv_file_path, num_processes=4)
+delete_similar_images("/space/tomcat/LangLab/experiments/study_3_pilot/group/exp_2023_02_21_14/lion/face_images", num_processes=4, batch_size=10)
+
