@@ -25,7 +25,7 @@ def images_are_similar_hash(image1_path, image2_path, csv_file_path):
 
 # Define a function to delete similar images
 def delete_similar_images(directory, csv_file_path):
-    image_paths = [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.png')]
+    image_paths = sorted([os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.png')])
     for i in range(len(image_paths)):
         for j in range(i+1, len(image_paths)):
             images_are_similar_histogram(image_paths[i], image_paths[j], csv_file_path)
