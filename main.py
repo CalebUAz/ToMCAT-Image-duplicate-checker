@@ -34,7 +34,7 @@ def images_are_similar_mse(image1_path, image2_path, csv_file_path):
     mse = np.mean((image1_np.astype("float") - image2_np.astype("float")) ** 2)
     # mse /= float(image1_np.shape[0] * image2_np.shape[1])
     print(mse)
-    if mse < 200:
+    if mse < 70:
         with open(csv_file_path, "a", newline="") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(["images_are_similar_mse", image1_path, image2_path])
@@ -89,5 +89,5 @@ def process_list(image_paths, method, csv_file_path):
                 print("images_are_similar_mse")
                 images_are_similar_mse(image_paths[i], image_paths[j], csv_file_path)
 
-delete_similar_images("/space/tomcat/LangLab/experiments/study_3_pilot/group/exp_2023_02_21_14/lion/face_images", num_processes=4, batch_size=10)
+delete_similar_images("/space/tomcat/LangLab/experiments/study_3_pilot/group/exp_2023_02_21_14/lion/face_images", num_processes=10, batch_size=100)
 
