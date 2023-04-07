@@ -34,12 +34,16 @@ def delete_similar_images(directory, num_processes=None, batch_size=10):
         writer = csv.writer(csv_file_handles[method])
         writer.writerow(["method", "image1_path", "image2_path"])
 
+    def worker(args):
+        image_paths, method, csv_file_path = args
+        process_list(image_paths, method, csv_file_path)
+
     with multiprocessing.Pool(num_processes) as pool:
-        for batch in image_path_batches:
-            for method, csv_file_path in csv_files.items():
-                pool.apply_async(process_list, args=(batch, method, csv_file_path))
+        tasks = [(batch, method, csv_file_path) for batch in image_path_batches for method, csv_file_path in csv_files.items()]
+        pool.imap_unordered(worker, tasks)
         pool.close()
         pool.join()
+
 
     for csv_file_handle in csv_file_handles.values():
         csv_file_handle.close()
@@ -51,4 +55,4 @@ def process_list(image_paths, method, csv_file_path):
             if method == "images_are_similar_mse":
                 images_are_similar_mse(image_paths[i], image_paths[j], csv_file_path)
 
-delete_similar_images("/space/tomcat/LangLab/experiments/study_3_pilot/group/exp_2023_02_21_14/lion/face_images", num_processes=10, batch_size=100)
+delete_similar_images("/space/tomcat/LangLab/experiments/study_3_pilot/group/exp_2023_02_21_14/lion/face_images", num_processes=10, batch_size=1000)
