@@ -33,7 +33,7 @@ def images_are_similar_mse(image1_path, image2_path, csv_file_path):
     image2_np = np.asarray(image2)
     mse = np.mean((image1_np.astype("float") - image2_np.astype("float")) ** 2)
     # mse /= float(image1_np.shape[0] * image2_np.shape[1])
-    print(mse)
+    # print(mse)
     if mse < 70:
         with open(csv_file_path, "a", newline="") as csv_file:
             writer = csv.writer(csv_file)
@@ -80,13 +80,13 @@ def process_list(image_paths, method, csv_file_path):
     for i in range(len(image_paths)):
         for j in range(i+1, len(image_paths)):
             if method == "images_are_similar_histogram":
-                print("images_are_similar_histogram")
+                # print("images_are_similar_histogram")
                 images_are_similar_histogram(image_paths[i], image_paths[j], csv_file_path)
             elif method == "images_are_similar_hash":
-                print("images_are_similar_hash")
+                # print("images_are_similar_hash")
                 images_are_similar_hash(image_paths[i], image_paths[j], csv_file_path)
             elif method == "images_are_similar_mse":
-                print("images_are_similar_mse")
+                # print("images_are_similar_mse")
                 images_are_similar_mse(image_paths[i], image_paths[j], csv_file_path)
 
 delete_similar_images("/space/tomcat/LangLab/experiments/study_3_pilot/group/exp_2023_02_21_14/lion/face_images", num_processes=10, batch_size=100)
