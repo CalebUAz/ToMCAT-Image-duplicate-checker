@@ -65,7 +65,7 @@ def delete_similar_images(directory, num_processes=None, batch_size=10):
         for batch in image_path_batches:
             for method in csv_files.keys():
                 csv_file_handle = csv_file_handles[method]
-                pool.apply_async(process_list, args=(batch, method, csv_file_handle))
+                pool.apply_async(process_list, args=(batch, csv_file_path, method))
         pool.close()
         pool.join()
 
