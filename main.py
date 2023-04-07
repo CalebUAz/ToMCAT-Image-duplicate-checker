@@ -38,7 +38,6 @@ def images_are_similar_mse(image1_path, image2_path, csv_file_path):
             writer.writerow(["images_are_similar_mse", image1_path, image2_path])
 
 # Define a function to delete similar images using parallel processing
-# Define a function to delete similar images using parallel processing
 def delete_similar_images(directory, num_processes=None, batch_size=10):
     csv_files = {
         "images_are_similar_histogram": "similar_images_histogram.csv",
@@ -54,16 +53,26 @@ def delete_similar_images(directory, num_processes=None, batch_size=10):
     num_batches = (len(image_paths) + batch_size - 1) // batch_size
     image_path_batches = [image_paths[i*batch_size:(i+1)*batch_size] for i in range(num_batches)]
 
+    # Open the CSV files in "w" mode
+    csv_file_handles = {}
+    for method, csv_file_path in csv_files.items():
+        csv_file_handles[method] = open(csv_file_path, "w", newline="")
+        writer = csv.writer(csv_file_handles[method])
+        writer.writerow(["method", "image1_path", "image2_path"])
+
     # Run the comparison functions on each list of images in parallel processes
     with multiprocessing.Pool(num_processes) as pool:
-        for method, csv_file_path in csv_files.items():
-            with open(csv_file_path, "w", newline="") as csv_file:
-                writer = csv.writer(csv_file)
-                writer.writerow(["method", "image1_path", "image2_path"])
-            for batch in image_path_batches:
-                pool.apply_async(process_list, args=(batch, method, csv_file_path))
+        for batch in image_path_batches:
+            for method in csv_files.keys():
+                csv_file_handle = csv_file_handles[method]
+                pool.apply_async(process_list, args=(batch, method, csv_file_handle))
         pool.close()
         pool.join()
+
+    # Close the CSV files
+    for csv_file_handle in csv_file_handles.values():
+        csv_file_handle.close()
+
 
 
 # Define a function to run the comparison functions on a list of images
