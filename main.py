@@ -55,11 +55,9 @@ def delete_similar_images(directory, num_processes=None, batch_size=10):
 
     # Run the comparison functions on each list of images in parallel processes
     with multiprocessing.Pool(num_processes) as pool:
-        for method, csv_file_path in csv_files.items():
-            with open(csv_file_path, "w", newline="") as csv_file:
-                writer = csv.writer(csv_file)
-                writer.writerow(["method", "image1_path", "image2_path"])
-            for batch in image_path_batches:
+        for batch in image_path_batches:
+            for method in csv_files.keys():
+                csv_file_path = csv_files[method]
                 pool.apply_async(process_list, args=(batch, method, csv_file_path))
         pool.close()
         pool.join()
