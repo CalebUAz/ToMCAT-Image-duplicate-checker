@@ -29,13 +29,16 @@ def images_are_similar_hash(image1_path, image2_path, csv_file_path):
 def images_are_similar_mse(image1_path, image2_path, csv_file_path):
     image1 = Image.open(image1_path)
     image2 = Image.open(image2_path)
-    mse = np.mean((np.asarray(image1.astype("float")) - np.asarray(image2.astype("float"))) ** 2)
-    mse /= float(image1.shape[0] * image2.shape[1])
+    image1_np = np.asarray(image1)
+    image2_np = np.asarray(image2)
+    mse = np.mean((image1_np.astype("float") - image2_np.astype("float")) ** 2)
+    mse /= float(image1_np.shape[0] * image2_np.shape[1])
     print(mse)
     if mse < 200:
         with open(csv_file_path, "a", newline="") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(["images_are_similar_mse", image1_path, image2_path])
+
 
 # Define a function to delete similar images using parallel processing
 def delete_similar_images(directory, num_processes=None, batch_size=10):
@@ -63,17 +66,14 @@ def delete_similar_images(directory, num_processes=None, batch_size=10):
     # Run the comparison functions on each list of images in parallel processes
     with multiprocessing.Pool(num_processes) as pool:
         for batch in image_path_batches:
-            for method in csv_files.keys():
-                csv_file_handle = csv_file_handles[method]
-                pool.apply_async(process_list, args=(batch, csv_file_path, method))
+            for method, csv_file_path in csv_files.items():
+                pool.apply_async(process_list, args=(batch, method, csv_file_path))  # Use the correct CSV file path for each method
         pool.close()
         pool.join()
 
     # Close the CSV files
     for csv_file_handle in csv_file_handles.values():
         csv_file_handle.close()
-
-
 
 # Define a function to run the comparison functions on a list of images
 def process_list(image_paths, method, csv_file_path):
