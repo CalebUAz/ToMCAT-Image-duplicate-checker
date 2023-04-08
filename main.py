@@ -12,10 +12,15 @@ def images_are_similar_mse(image1_path, image2_path, csv_file_path):
     image1_np = np.asarray(image1)[:,:,0]  # Extract the Red channel
     image2_np = np.asarray(image2)[:,:,0]  # Extract the Red channel
     mse = np.mean((image1_np.astype("float") - image2_np.astype("float")) ** 2)
-    if mse < 0:
+    print(mse)
+    if mse  <= 5:
         with open(csv_file_path, "a", newline="") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(["images_are_similar_mse", image1_path, image2_path])
+
+def worker(args):
+    image_paths, method, csv_file_path = args
+    process_list(image_paths, method, csv_file_path)
 
 # Define a function to delete similar images using parallel processing
 def delete_similar_images(directory, num_processes=None, batch_size=10):
@@ -26,7 +31,7 @@ def delete_similar_images(directory, num_processes=None, batch_size=10):
         num_processes = multiprocessing.cpu_count()
     batch_size = min(batch_size, len(image_paths))
     num_batches = (len(image_paths) + batch_size - 1) // batch_size
-    image_path_batches = [image_paths[i*batch_size:(i+1)*batch_size] for i in range(num_batches)]
+    image_path_batches = [image_paths[i:i + batch_size] for i in range(0, len(image_paths), batch_size)]
 
     csv_file_handles = {}
     for method, csv_file_path in csv_files.items():
@@ -34,16 +39,12 @@ def delete_similar_images(directory, num_processes=None, batch_size=10):
         writer = csv.writer(csv_file_handles[method])
         writer.writerow(["method", "image1_path", "image2_path"])
 
-    def worker(args):
-        image_paths, method, csv_file_path = args
-        process_list(image_paths, method, csv_file_path)
-
     with multiprocessing.Pool(num_processes) as pool:
         tasks = [(batch, method, csv_file_path) for batch in image_path_batches for method, csv_file_path in csv_files.items()]
-        pool.imap_unordered(worker, tasks)
+        for _ in pool.imap_unordered(worker, tasks):
+            pass
         pool.close()
         pool.join()
-
 
     for csv_file_handle in csv_file_handles.values():
         csv_file_handle.close()
@@ -55,4 +56,5 @@ def process_list(image_paths, method, csv_file_path):
             if method == "images_are_similar_mse":
                 images_are_similar_mse(image_paths[i], image_paths[j], csv_file_path)
 
-delete_similar_images("/space/tomcat/LangLab/experiments/study_3_pilot/group/exp_2023_02_21_14/lion/face_images", num_processes=10, batch_size=1000)
+if __name__ == '__main__':
+    delete_similar_images("/Users/calebjonesshibu/Desktop/tom/exp_2023_02_21_14/lion/face_images", num_processes=10, batch_size=100)
