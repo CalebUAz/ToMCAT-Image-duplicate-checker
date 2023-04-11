@@ -42,7 +42,8 @@ if __name__ == '__main__':
 
     animal_folders = ["leopard", "lion", "tiger"]
     
-    tasks = [(animal, args.exp_dir, args.num_images_to_read) for animal in animal_folders]
+    chunk_size = 10
+    tasks = [(animal, args.exp_dir, args.num_images_to_read, chunk_size) for animal in animal_folders]
     
     num_processes = min(multiprocessing.cpu_count(), len(animal_folders))
 
