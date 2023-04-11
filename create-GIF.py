@@ -49,3 +49,5 @@ if __name__ == '__main__':
 
     with multiprocessing.Pool(num_processes) as pool:
         pool.map(create_gif_from_csv, tasks)
+
+#ulimit -n 4096 run this if you are getting error regarding opening multiple files at once. 
