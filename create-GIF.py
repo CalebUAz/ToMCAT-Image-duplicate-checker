@@ -26,12 +26,12 @@ def create_gif_from_csv(args):
         chunk_images = [Image.open(image_path) for image_path in chunk]
         images.extend(chunk_images)
 
-        # Close the images in the chunk
-        for image in chunk_images:
-            image.close()
-
     # Save the images as a GIF
     images[0].save(output_gif_path, save_all=True, append_images=images[1:], duration=50, loop=0)
+
+    # Close the images
+    for image in images:
+        image.close()
 
 
 if __name__ == '__main__':
