@@ -5,11 +5,10 @@ from PIL import Image
 import multiprocessing
 
 def create_gif_from_csv(args):
-    animal, exp_dir, num_images_to_read = args
+    animal, exp_dir, num_images_to_read, chunk_size = args
     csv_file_path = os.path.join(exp_dir, animal, "face_images", "duplicate_images.csv")
     output_gif_path = os.path.join(exp_dir, animal, "face_images", "output.gif")
 
-    print(output_gif_path)
     image_paths = []
     with open(csv_file_path, "r") as csv_file:
         reader = csv.DictReader(csv_file)
@@ -18,13 +17,22 @@ def create_gif_from_csv(args):
                 break
             image_paths.append(row["image_path"])
 
-    # print(len(image_paths))
+    print(len(image_paths))
 
     # Open the images
-    images = [Image.open(image_path) for image_path in image_paths[1:]]
+    images = []
+    for i in range(0, len(image_paths[3000:]), chunk_size):
+        chunk = image_paths[3000:][i:i + chunk_size]
+        chunk_images = [Image.open(image_path) for image_path in chunk]
+        images.extend(chunk_images)
+
+        # Close the images in the chunk
+        for image in chunk_images:
+            image.close()
 
     # Save the images as a GIF
     images[0].save(output_gif_path, save_all=True, append_images=images[1:], duration=50, loop=0)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Create a GIF from duplicate images listed in CSV files.")
