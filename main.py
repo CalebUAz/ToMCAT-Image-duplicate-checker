@@ -12,7 +12,7 @@ def images_are_similar_mse(image1_path, image2_path, csv_file_path, delete_image
     image1_np = np.asarray(image1)[:,:,0]
     image2_np = np.asarray(image2)[:,:,0]
     mse = np.mean((image1_np.astype("float") - image2_np.astype("float")) ** 2)
-    print(mse)
+    # print(mse)
     if mse == 0:
         if delete_images:
             os.remove(image1_path)
@@ -25,7 +25,7 @@ def worker(args):
     image_paths, method, csv_file_path, delete_images = args
     process_list(image_paths, method, csv_file_path, delete_images)
 
-def delete_similar_images(directory, delete_images, num_processes=None, batch_size=10):
+def delete_similar_images(directory, delete_images, csv_output_dir=None, num_processes=None, batch_size=10, exp_folder=None, imac_folder=None):
     csv_files = {"images_are_similar_mse": "duplicate_images.csv"}
     
     image_paths = sorted([os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.png')])
@@ -38,8 +38,14 @@ def delete_similar_images(directory, delete_images, num_processes=None, batch_si
 
     csv_file_paths = {}
     for method, csv_file_name in csv_files.items():
-        csv_file_path = os.path.join(directory, csv_file_name)
+        if csv_output_dir:
+            output_dir = os.path.join(csv_output_dir, exp_folder, imac_folder, "face_images")
+            os.makedirs(output_dir, exist_ok=True)
+            csv_file_path = os.path.join(output_dir, csv_file_name)
+        else:
+            csv_file_path = os.path.join(directory, csv_file_name)
         csv_file_paths[method] = csv_file_path
+        print(csv_file_path)
         with open(csv_file_path, "w", newline="") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(["image_path"])
@@ -66,13 +72,24 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Find and remove duplicate images.')
     parser.add_argument('--exp_dir', type=str, required=True, help='Experiment directory path which has lion, tiger, leopard which contains the image folders.')
     parser.add_argument('--delete', action='store_true', help='Delete duplicate images instead of writing to CSV.')
+    parser.add_argument('--csv_output_dir', type=str, help='Output directory for CSV file, if not deleting images.')
     args = parser.parse_args()
     
     exp_dir = str(args.exp_dir)
     delete_images = args.delete
+    csv_output_dir = args.csv_output_dir
     imac_folders = ["lion", "tiger", "leopard"]
     
+    exp_folder_name = os.path.basename(exp_dir)
+
     for imac in imac_folders:
         folder_path = os.path.join(exp_dir, imac, "face_images")
-        delete_similar_images(folder_path, num_processes=10, batch_size=2, delete_images=delete_images)
-        
+        delete_similar_images(
+            folder_path,
+            num_processes=10,
+            batch_size=2,
+            delete_images=delete_images,
+            csv_output_dir=csv_output_dir,
+            exp_folder=exp_folder_name,
+            imac_folder=imac
+        )
