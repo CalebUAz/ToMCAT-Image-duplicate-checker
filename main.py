@@ -7,10 +7,10 @@ import numpy as np
 import argparse
 
 def images_are_similar_mse(image1_path, image2_path, csv_file_path, delete_images):
-    image1 = Image.open(image1_path).resize((100, 100), Image.ANTIALIAS)
-    image2 = Image.open(image2_path).resize((100, 100), Image.ANTIALIAS)
-    image1_np = np.asarray(image1)[:,:,0]
-    image2_np = np.asarray(image2)[:,:,0]
+    image1 = Image.open(image1_path)
+    image2 = Image.open(image2_path)
+    image1_np = np.asarray(image1)[:,:,:]
+    image2_np = np.asarray(image2)[:,:,:]
     mse = np.mean((image1_np.astype("float") - image2_np.astype("float")) ** 2)
     # print(mse)
     if mse == 0:
